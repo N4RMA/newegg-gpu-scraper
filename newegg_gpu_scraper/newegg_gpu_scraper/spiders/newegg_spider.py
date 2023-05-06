@@ -4,7 +4,7 @@ import scrapy
 class NeweggSpiderSpider(scrapy.Spider):
     name = "newegg_spider"
     allowed_domains = ["newegg.ca"]
-    start_urls = ["https://www.newegg.ca/GPUs-Video-Graphics-Cards/SubCategory/ID-48"]
+    start_urls = ["https://www.newegg.ca/GPUs-Video-Graphics-Cards/SubCategory/ID-48/Page-1"]
 
     def parse(self, response):
         products = response.xpath("//div[contains(@class, 'item-cell')]")
@@ -23,7 +23,12 @@ class NeweggSpiderSpider(scrapy.Spider):
                 'url': url,
             }
 
-        # Locate and follow the next page link, if available
-        next_page_url = response.xpath("//a[contains(@class, 'next')]/@href").get()
-        if next_page_url:
-            yield scrapy.Request(url=next_page_url, callback=self.parse)
+        # Extract the current page number and increment it to get the next page number
+        current_page_number = int(response.url.split('Page-')[-1])
+        next_page_number = current_page_number + 1
+
+        # Generate the next page URL by replacing the page number in the current URL
+        next_page_url = response.url.replace(f'Page-{current_page_number}', f'Page-{next_page_number}')
+
+        # Follow the next page link
+        yield scrapy.Request(url=next_page_url, callback=self.parse)
