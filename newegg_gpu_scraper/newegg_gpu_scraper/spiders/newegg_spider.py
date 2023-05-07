@@ -1,4 +1,5 @@
 import scrapy
+from newegg_gpu_scraper.items import GpuItem
 
 
 class NeweggSpiderSpider(scrapy.Spider):
@@ -16,12 +17,14 @@ class NeweggSpiderSpider(scrapy.Spider):
             price = f'{price_whole_part}{price_fraction_part}'
             url = product.xpath(".//a[contains(@class, 'item-title')]/@href").get()
 
-            # Yield the extracted data as a dictionary
-            yield {
-                'name': name,
-                'price': price,
-                'url': url,
-            }
+            # Create an instance of GpuItem and populate its fields
+            gpu_item = GpuItem()
+            gpu_item['name'] = name
+            gpu_item['price'] = price
+            gpu_item['url'] = url
+
+            # Yield the GpuItem instance
+            yield gpu_item
 
         # Extract the current page number and increment it to get the next page number
         current_page_number = int(response.url.split('Page-')[-1])
